@@ -1,0 +1,103 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Frog : Enemy
+{
+    [SerializeField] private float LeftCap;
+    [SerializeField] private float RightCap;
+
+    [SerializeField] private float jumpLenght = 5f;
+    [SerializeField] private float jumpHeight = 10f;
+
+    private bool facingLeft = true;
+    private Collider2D coll;
+    private Rigidbody2D fg;
+
+    //Inspector Variables 
+    [SerializeField] private LayerMask ground;
+
+    protected override void Start()
+    {
+        base.Start();
+        fg = GetComponent<Rigidbody2D>();
+        coll = GetComponent<Collider2D>(); 
+       
+    }
+    private void Update()
+    {
+        // Transsion from Jump to Fall and from Fall to İdle
+        if (anim.GetBool("Jumping"))
+        {
+            if (fg.velocity.y < .1)
+            {
+                anim.SetBool("Falling", true);
+                anim.SetBool("Jumping", false);
+            }
+        }
+        if (coll.IsTouchingLayers(ground) && anim.GetBool("Falling"))
+        {
+            anim.SetBool("Falling", false);
+        }
+    }
+
+    private void Move()
+    {
+        if (facingLeft)
+        {
+            // Test to see if we are beyond the Leftcap
+            if (transform.position.x > LeftCap)
+            {
+                // Makes sure sprite facing right location, and if not then face the right direction.
+                if (transform.localScale.x != 1)
+                {
+                    transform.localScale = new Vector3(1, 1);
+                }
+                if (coll.IsTouchingLayers(ground))
+                {
+                    fg.velocity = new Vector2(-jumpLenght, jumpHeight);
+                    anim.SetBool("Jumping", true);
+                }
+                anim.SetBool("Falling", true);
+
+            }
+            else
+            {
+                facingLeft = false;
+            }
+            // if it is not, we are going to face Right
+        }
+        else
+        {
+            // Test to see if we are beyond the Leftcap
+            if (transform.position.x < RightCap)
+            {
+                // Makes sure sprite facing right location, and if not then face the right direction.
+                if (transform.localScale.x != -1)
+                {
+                    transform.localScale = new Vector3(-1, 1);
+                }
+                if (coll.IsTouchingLayers(ground))
+                {
+                    fg.velocity = new Vector2(jumpLenght, jumpHeight);
+                    anim.SetBool("Jumping", true);
+                }
+                anim.SetBool("Falling", true);
+            }
+            else
+            {
+                facingLeft = true;
+
+            }
+        }
+    }
+
+    public void Trampolin()
+    {
+        anim.SetTrigger("Death");
+    }
+    private void Death()
+    {
+        Destroy(this.gameObject);
+    }
+}
